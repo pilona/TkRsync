@@ -125,10 +125,6 @@ class RsyncTkGUI(ttk.Frame):
                    ("Extended ACLs",                  "--acls",       "xacls"),
                    ("Extended attributes",            "--xattrs",     "xattrs")]),
 
-                 # -d, --dirs                  transfer directories without recursing
-                 ("Directory handling",
-                  [("Recurse into directories",       "--recursive",  "recursive")]),
-
                  # -L, --copy-links            transform symlink into referent file/dir
                  #     --copy-unsafe-links     only "unsafe" symlinks are transformed
                  #     --safe-links            ignore symlinks that point outside the tree
@@ -236,7 +232,8 @@ class RsyncTkGUI(ttk.Frame):
                  #     --copy-dest=DIR         ... and include copies of unchanged files
 
                  ("Additional file types to preserve",
-                  [("Symbolic links",                 "--links",      "slinks"),
+                  [("Directories",                    "--dirs",       "directories"),
+                   ("Symbolic links",                 "--links",      "slinks"),
                    ("Hard links",                     "--hard-links", "hlinks"),
                    ("Special files",                  "--specials",   "specials"),
                    ("Device files (super-user only)", "--devices",    "devices")])]):
@@ -292,8 +289,20 @@ class RsyncTkGUI(ttk.Frame):
         def callback():
             mode = archive_mode.get()
             for flag in map(self.flags.__getitem__,
-                            ["recursive", "slinks", "perms", "mtimes",
-                             "group", "owner", "devices", "specials"]):
+                            [# As per rsync '-a' flag, minus recursion. Not
+                             # exactly the semantics of the original rsync,
+                             # but sensible to someone who hasn't used it.
+                             # Would they care, they'd use rsync directly
+                             # anyhow.
+                             "slinks", "perms", "mtimes",
+                             "group", "owner", "devices", "specials",
+                             # what users really should also care about,
+                             # despite not being included in '-a' set
+                             "xattrs", "xacls", "hlinks",
+                             # We separate the notion of 'archiving' from
+                             # recursing, but still copy directories themselves
+                             # (not their contents).
+                             "directories"]):
                 flag.variable.set(mode)
         checkbutton = ttk.Checkbutton(simple,
                                       onvalue=True, offvalue=False,
@@ -301,6 +310,23 @@ class RsyncTkGUI(ttk.Frame):
                                            " (all metadata and file types)",
                                       variable=archive_mode, command=callback)
         checkbutton.grid(row=next(subrows), column=0, columnspan=2)
+
+        variable = tk.BooleanVar()
+        rf = _rf(variable, "--recursive", _dirty_factory())
+        self.flags["recursive"] = rf
+        def callback():
+            # FIXME: closure name clash (clobbering) issues?
+            mode = variable.get()
+            if mode or not self.flags["directories"].dirty():
+                self.flags["directories"].variable.set(mode)
+        checkbutton = ttk.Checkbutton(simple,
+                                      onvalue=True, offvalue=False,
+                                      text="Recurse into directories",
+                                      variable=variable,
+                                      # no need to track dirtying
+                                      command=callback)
+        checkbutton.grid(row=next(subrows), column=0, columnspan=2,
+                         sticky=tk.W)
 
         nb.add(simple, text="Simple")
         nb.add(advanced, text="advanced")
