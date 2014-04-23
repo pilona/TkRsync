@@ -64,12 +64,11 @@ class RsyncTkGUI(ttk.Frame):
 
         row = next(rows)
         ttk.Label(self, text="Remote…").grid(row=row, column=0, columnspan=2,
-                                              sticky=(tk.W, tk.E))
+                                             sticky=(tk.W, tk.E))
 
         row = next(rows)
         self.remoteuser = tk.StringVar(value=getuser())
-        ttk.Label(self, text="user:").grid(row=row, column=0,
-                                                  sticky=tk.W)
+        ttk.Label(self, text="user:").grid(row=row, column=0, sticky=tk.W)
         ttk.Entry(self, textvariable=self.remoteuser).grid(row=row, column=1,
                                                            sticky=(tk.W, tk.E))
 
@@ -77,17 +76,16 @@ class RsyncTkGUI(ttk.Frame):
         self.remotehost = tk.StringVar()
         # TODO: notebook and option of local directory or remote host; local directory 
         # TODO: Determine if the file sync use case is really necessary
-        ttk.Label(self, text="host:").grid(row=row, column=0,
-                                                  sticky=tk.W)
+        ttk.Label(self, text="host:").grid(row=row, column=0, sticky=tk.W)
         ttk.Entry(self, textvariable=self.remotehost).grid(row=row, column=1,
                                                            sticky=(tk.W, tk.E))
 
         row = next(rows)
         self.remotedirectory = tk.StringVar()
         ttk.Label(self, text="directory:").grid(row=row, column=0,
-                                                       sticky=tk.W)
-        ttk.Entry(self, textvariable=self.remotedirectory).grid(row=row, column=1,
-                                                                sticky=(tk.W, tk.E))
+                                                sticky=tk.W)
+        entry = ttk.Entry(self, textvariable=self.remotedirectory)
+        entry.grid(row=row, column=1, sticky=(tk.W, tk.E))
 
         row = next(rows)
         self.syncmode = tk.StringVar()
@@ -277,8 +275,7 @@ class RsyncTkGUI(ttk.Frame):
             ttk.Label(subframe, text=description).grid(row=subrow, column=0,
                                                        sticky=tk.W)
             button = ttk.Radiobutton(subframe, textvariable=variable, value=flag)
-            button.grid(row=subrow, column=1,
-                        sticky=(tk.W, tk.E))
+            button.grid(row=subrow, column=1, sticky=(tk.W, tk.E))
             buttons.append(button)
 
         # --- --- simple options --- --- #
@@ -308,7 +305,9 @@ class RsyncTkGUI(ttk.Frame):
                                       onvalue=True, offvalue=False,
                                       text="Full archival mode"
                                            " (all metadata and file types)",
-                                      variable=archive_mode, command=callback)
+                                      variable=archive_mode,
+                                      # no need to track dirtying
+                                      command=callback)
         checkbutton.grid(row=next(subrows), column=0, columnspan=2)
 
         variable = tk.BooleanVar()
@@ -329,7 +328,7 @@ class RsyncTkGUI(ttk.Frame):
                          sticky=tk.W)
 
         nb.add(simple, text="Simple")
-        nb.add(advanced, text="advanced")
+        nb.add(advanced, text="Advanced")
 
         # TODO: Display command at bottom, as being built
 
