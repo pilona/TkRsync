@@ -13,7 +13,7 @@ from getpass import getuser
 # TODO: remote host validation, and feedback by colouring the background of the entry field
 #from socket import gethostbyname
 
-_rf = namedtuple("_RsyncFlag", ["variable", "flag", "dirty"])
+_rf = namedtuple("_RsyncFlag", ["variable", "flag"])
 
 class RsyncTkGUI(ttk.Frame):
     def __init__(self, master):
@@ -76,7 +76,7 @@ class RsyncTkGUI(ttk.Frame):
         f = ttk.Frame(self)
         f.grid(row=row, column=1)
         def callback():
-            if self.syncmode == "both" and not self.flags["update"].dirty:
+            if self.syncmode == "both":
                 self.flags["update"].variable.set(True)
         for column, mode in enumerate(["send", "receive", "both"]):
             rb = ttk.Radiobutton(f, text=mode, value=mode,
@@ -232,7 +232,7 @@ class RsyncTkGUI(ttk.Frame):
                                               onvalue=True, offvalue=False)
                 checkbutton.grid(row=subsubrow, column=0, columnspan=2,
                                  sticky=(tk.W, tk.E))
-                self.flags[key] = _rf(variable, flag, dirty=False)
+                self.flags[key] = _rf(variable, flag)
 
         subframe = ttk.Labelframe(advanced, text="Deletion")
         # --delete-* should only be available if --delete is set
@@ -273,8 +273,7 @@ class RsyncTkGUI(ttk.Frame):
             for flag in map(self.flags.__getitem__,
                             ["recursive", "slinks", "perms", "mtimes",
                              "group", "owner", "devices", "specials"]):
-                if not flag.dirty:
-                    flag.variable.set(mode)
+                flag.variable.set(mode)
         checkbutton = ttk.Checkbutton(simple,
                                       onvalue=True, offvalue=False,
                                       text="Full archival mode"
@@ -286,9 +285,6 @@ class RsyncTkGUI(ttk.Frame):
         nb.add(advanced, text="advanced")
 
         # TODO: Display command at bottom, as being built
-
-        # TODO: Implement
-        #self.dirty = False  # i.e., user made changes to sync options
 
         row = next(rows)
         ttk.Button(self, text="Sync", command=self.sync).grid(row=row, column=1,
