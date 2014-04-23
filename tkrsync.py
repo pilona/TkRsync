@@ -21,6 +21,10 @@ class RsyncTkGUI(ttk.Frame):
 
         rows = count()
 
+        # TODO: Cache previous 'preferences'
+
+        # TODO: Refuse, or heavily discourage, unencrypted sync
+
         # --- Source and destination handling --- #
         row = next(rows)
         ttk.Label(self, text="Local…").grid(row=row, column=0, columnspan=2,
@@ -102,8 +106,115 @@ class RsyncTkGUI(ttk.Frame):
                    ("Extended ACLs",                  "--acls",       "xacls"),
                    ("Extended attributes",            "--xattrs",     "xattrs")]),
 
+                 # -d, --dirs                  transfer directories without recursing
                  ("Directory handling",
                   [("Recurse into directories",       "--recursive",  "recursive")]),
+
+                 # -L, --copy-links            transform symlink into referent file/dir
+                 #     --copy-unsafe-links     only "unsafe" symlinks are transformed
+                 #     --safe-links            ignore symlinks that point outside the tree
+                 #     --munge-links           munge symlinks to make them safer
+                 # -k, --copy-dirlinks         transform symlink to dir into referent dir
+                 # -K, --keep-dirlinks         treat symlinked dir on receiver as dir
+                 # -H, --hard-links            preserve hard links
+                 #("Link handling",
+                 # []),
+
+                 #     --inplace               update destination files in-place
+                 #     --append                append data onto shorter files
+                 #     --append-verify         --append w/old data in file checksum
+                 #("Update mode",
+                 # []),
+
+                 # -S, --sparse                handle sparse files efficiently
+                 #     --preallocate           allocate dest files before writing
+                 # -W, --whole-file            copy files whole (w/o delta-xfer algorithm)
+                 # -B, --block-size=SIZE       force a fixed checksum block-size
+                 # -z, --compress              compress file data during the transfer
+                 # TODO: Use [ttk.Scale widget](http://www.tkdocs.com/tutorial/morewidgets.html#scale) here.
+                 #     --compress-level=NUM    explicitly set compression level
+                 #     --skip-compress=LIST    skip compressing files with suffix in LIST
+                 #("Performance",
+                 # []),
+
+                 # Required for syncmode == "both"
+                 # -u, --update                skip files that are newer on the receiver
+
+                 # -c, --checksum              skip based on checksum, not mod-time & size
+                 # -y, --fuzzy                 find similar file for basis if no dest file
+                 # -I, --ignore-times          don't skip files that match size and time
+                 #     --modify-window=NUM     compare mod-times with reduced accuracy
+                 #     --size-only             skip files that match in size
+                 #     --existing              skip creating new files on receiver
+                 #     --ignore-existing       skip updating files that exist on receiver
+                 #     --remove-source-files   sender removes synchronized files (non-dir)
+                 #     --force                 force deletion of dirs even if not empty
+                 # -m, --prune-empty-dirs      prune empty directory chains from file-list
+                 #("Difference detection and resolution",
+                 # []),
+
+                 #     --numeric-ids           don't map uid/gid values by user/group name
+                 #     --usermap=STRING        custom username mapping
+                 #     --groupmap=STRING       custom groupname mapping
+                 #     --chown=USER:GROUP      simple username/groupname mapping
+                 #("Remote end file ownership",
+                 # []),
+
+                 #     --partial               keep partially transferred files
+                 #     --partial-dir=DIR       put a partially transferred file into DIR
+
+                 #     --timeout=SECONDS       set I/O timeout in seconds
+                 #     --contimeout=SECONDS    set daemon connection timeout in seconds
+                 #     --port=PORT             specify double-colon alternate port number
+                 # -4, --ipv4                  prefer IPv4
+                 # -6, --ipv6                  prefer IPv6
+                 #("Network",
+                 # []),
+
+                 #     --link-dest=DIR         hardlink to files in DIR when unchanged
+                 # -b, --backup                make backups (see --suffix & --backup-dir)
+                 #     --backup-dir=DIR        make backups into hierarchy based in DIR
+                 #     --suffix=SUFFIX         backup suffix (default ~ w/o --backup-dir)
+                 #     --delay-updates         put all updated files into place at end
+                 #("'Backup'",
+                 # []),
+
+                 #     --stats                 give some file-transfer stats
+                 # -8, --8-bit-output          leave high-bit chars unescaped in output
+                 # -h, --human-readable        output numbers in a human-readable format
+                 # -i, --itemize-changes       output a change-summary for all updates
+                 #     --log-file=FILE         log what we're doing to the specified FILE
+                 # TODO: Show [indeterminate # progress](http://www.tkdocs.com/tutorial/morewidgets.html#progressbar)
+                 #       if this is unset. Else, this'll show up in the redirected
+                 #       standard output.
+                 #     --progress              show progress during transfer
+                 #("Reporting",
+                 # []),
+
+                 # -x, --one-file-system       don't cross filesystem boundaries
+                 #     --max-delete=NUM        don't delete more than NUM files
+                 #     --max-size=SIZE         don't transfer any file larger than SIZE
+                 #     --min-size=SIZE         don't transfer any file smaller than SIZE
+
+                 # -C, --cvs-exclude           auto-ignore files in the same way CVS does
+                 # -f, --filter=RULE           add a file-filtering RULE
+                 #     --exclude=PATTERN       exclude files matching PATTERN
+                 #     --exclude-from=FILE     read exclude patterns from FILE
+                 #     --include=PATTERN       don't exclude files matching PATTERN
+                 #     --include-from=FILE     read include patterns from FILE
+                 #     --files-from=FILE       read list of source-file names from FILE
+
+                 #     --bwlimit=RATE          limit socket I/O bandwidth
+                 #("Throttling and filtering",
+                 # []),
+
+                 # Assorted:
+                 #     --ignore-errors         delete even if there are I/O errors
+                 # -n, --dry-run               perform a trial run with no changes made
+                 #     --list-only             list the files instead of copying them
+                 # -T, --temp-dir=DIR          create temporary files in directory DIR
+                 #     --compare-dest=DIR      also compare received files relative to DIR
+                 #     --copy-dest=DIR         ... and include copies of unchanged files
 
                  ("Additional file types to preserve",
                   [("Symbolic links",                 "--links",      "slinks"),
@@ -141,6 +252,9 @@ class RsyncTkGUI(ttk.Frame):
         for subrow, (description, flag) in \
             zip(subrows,
                 [("Before transfer", "--delete-before"),
+                 # Too complex for some users?
+                 #("During transfer", "--delete-during"),
+                 #("Find deletions during, delete after", "--delete-delay")
                  ("After transfer",  "--delete-after")]):
             ttk.Label(subframe, text=description).grid(row=subrow, column=0,
                                                        sticky=tk.W)
