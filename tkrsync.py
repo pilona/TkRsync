@@ -13,7 +13,7 @@ from getpass import getuser
 # TODO: remote host validation, and feedback by colouring the background of the entry field
 #from socket import gethostbyname
 
-_rf = namedtuple("_RsyncFlag", ["variable", "widget", "flag", "dirty"])
+_rf = namedtuple("_RsyncFlag", ["variable", "flag", "dirty"])
 
 class RsyncTkGUI(ttk.Frame):
     def __init__(self, master):
@@ -232,7 +232,7 @@ class RsyncTkGUI(ttk.Frame):
                                               onvalue=True, offvalue=False)
                 checkbutton.grid(row=subsubrow, column=0, columnspan=2,
                                  sticky=(tk.W, tk.E))
-                self.flags[key] = _rf(variable, checkbutton, flag, dirty=False)
+                self.flags[key] = _rf(variable, flag, dirty=False)
 
         subframe = ttk.Labelframe(advanced, text="Deletion")
         # --delete-* should only be available if --delete is set
@@ -273,8 +273,8 @@ class RsyncTkGUI(ttk.Frame):
             for flag in map(self.flags.__getitem__,
                             ["recursive", "slinks", "perms", "mtimes",
                              "group", "owner", "devices", "specials"]):
-                if not flag.dirty and bool(flag.variable.get()) != mode:
-                    flag.widget.invoke()
+                if not flag.dirty:
+                    flag.variable.set(mode)
         checkbutton = ttk.Checkbutton(simple,
                                       onvalue=True, offvalue=False,
                                       text="Full archival mode"
