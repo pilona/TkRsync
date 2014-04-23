@@ -13,7 +13,26 @@ from getpass import getuser
 # TODO: remote host validation, and feedback by colouring the background of the entry field
 #from socket import gethostbyname
 
-_rf = namedtuple("_RsyncFlag", ["variable", "flag"])
+_rf = namedtuple("_RsyncFlag", ["variable", "flag", "dirty"])
+
+# dirty, pun intended, closure 'magic'
+# Can't use weakrefs because bools are immutable.
+def _dirty_factory():
+    _dirty = False
+    def callback(_set=None):
+        nonlocal _dirty
+        if _set is None:
+            return _dirty
+        else:
+            _dirty = _set
+    return callback
+
+def _set_factory(target, next_callback=None):
+    def callback(target=target, next_callback=next_callback):
+        target(True)
+        if next_callback is not None:
+            next_callback()
+    return callback
 
 class RsyncTkGUI(ttk.Frame):
     def __init__(self, master):
@@ -226,13 +245,15 @@ class RsyncTkGUI(ttk.Frame):
                           sticky=tk.W)
             for subsubrow, (description, flag, key) in enumerate(group):
                 variable = tk.BooleanVar()
+                rf = _rf(variable, flag, _dirty_factory())
+                self.flags[key] = rf
                 checkbutton = ttk.Checkbutton(subframe,
                                               text=description,
                                               variable=variable,
-                                              onvalue=True, offvalue=False)
+                                              onvalue=True, offvalue=False,
+                                              command=_set_factory(rf.dirty))
                 checkbutton.grid(row=subsubrow, column=0, columnspan=2,
                                  sticky=(tk.W, tk.E))
-                self.flags[key] = _rf(variable, flag)
 
         subframe = ttk.Labelframe(advanced, text="Deletion")
         # --delete-* should only be available if --delete is set
