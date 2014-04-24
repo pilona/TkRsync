@@ -89,7 +89,7 @@ class RsyncTkGUI(ttk.Frame):
 
         row = next(rows)
         self.syncmode = tk.StringVar()
-        ttk.Label(self, text="Sync mode:").grid(row=row, column=0)
+        ttk.Label(self, text="Sync mode:").grid(row=row, column=0, sticky=tk.W)
         f = ttk.Frame(self)
         f.grid(row=row, column=1)
         def callback():
@@ -99,7 +99,7 @@ class RsyncTkGUI(ttk.Frame):
             rb = ttk.Radiobutton(f, text=mode, value=mode,
                                  variable=self.syncmode,
                                  command=callback)
-            rb.grid(row=0, column=column)
+            rb.grid(row=0, column=column, sticky=tk.E)
         rb.invoke()  # mode "both"
 
         # --- Copy options --- #
