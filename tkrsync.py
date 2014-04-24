@@ -251,6 +251,7 @@ class RsyncTkGUI(ttk.Frame):
                                  sticky=(tk.W, tk.E))
 
         subframe = ttk.Labelframe(advanced, text="Deletion")
+        subsubrows = count()
         # --delete-* should only be available if --delete is set
         choice = tk.StringVar()
         variable = tk.BooleanVar()
@@ -263,19 +264,19 @@ class RsyncTkGUI(ttk.Frame):
                                       onvalue=True, offvalue=False,
                                       text="Delete extraneous files from"
                                            " destination directories")
-        checkbutton.grid(row=next(subrows), column=0, columnspan=2,
+        checkbutton.grid(row=next(subsubrows), column=0, columnspan=2,
                          sticky=(tk.W, tk.E))
-        for subrow, (description, flag) in \
-            zip(subrows,
+        for subsubrow, (description, flag) in \
+            zip(subsubrows,
                 [("Before transfer", "--delete-before"),
                  # Too complex for some users?
                  #("During transfer", "--delete-during"),
                  #("Find deletions during, delete after", "--delete-delay")
                  ("After transfer",  "--delete-after")]):
-            ttk.Label(subframe, text=description).grid(row=subrow, column=0,
+            ttk.Label(subframe, text=description).grid(row=subsubrow, column=0,
                                                        sticky=tk.W)
             button = ttk.Radiobutton(subframe, textvariable=variable, value=flag)
-            button.grid(row=subrow, column=1, sticky=(tk.W, tk.E))
+            button.grid(row=subsubrow, column=1, sticky=(tk.W, tk.E))
             buttons.append(button)
 
         # --- --- simple options --- --- #
