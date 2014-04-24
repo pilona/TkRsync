@@ -14,6 +14,7 @@ from getpass import getuser
 #from socket import gethostbyname
 
 _rf = namedtuple("_RsyncFlag", ["variable", "flag", "dirty"])
+_rc = namedtuple("_RsyncChoice", ["variable", "dirty"])
 
 # dirty, pun intended, closure 'magic'
 # Can't use weakrefs because bools are immutable.
@@ -107,6 +108,7 @@ class RsyncTkGUI(ttk.Frame):
         nb = ttk.Notebook(self)
         nb.grid(row=row, column=0, columnspan=2, sticky=(tk.W, tk.E))
         self.flags = {}
+        self.choices = {}
 
         # --- --- advanced options --- --- #
         advanced = ttk.Frame(nb)
@@ -285,6 +287,49 @@ class RsyncTkGUI(ttk.Frame):
                                      state=(tk.DISABLED,))
             button.grid(row=subsubrow, column=1, sticky=(tk.W, tk.E))
             widgets.append(button)
+        subframe.grid(row=next(subrows), column=0, columnspan=2,
+                      sticky=(tk.W, tk.E))
+
+        subframe = ttk.Labelframe(advanced, text="Difference detection and resolution")
+        rf = _rf(tk.BooleanVar(), "--update", _dirty_factory())
+        rf.variable.set(True)  # FIXME: duplication of effort
+        self.flags["update"] = rf
+        ttk.Checkbutton(subframe,
+                        text="Skip files that are newer on the receiver",
+                        onvalue=True, offvalue=False,
+                        variable=rf.variable,
+                        command=_set_factory(rf.dirty)).grid(row=next(subrows),
+                                                             column=0,
+                                                             columnspan=2,
+                                                             sticky=(tk.W,
+                                                                     tk.E))
+        ttk.Label(subframe,
+                  text="Detect differences using…").grid(row=next(subrows),
+                                                         column=0,
+                                                         columnspan=2,
+                                                         sticky=(tk.W, tk.E))
+        subsubframe = ttk.Frame(subframe)
+        subsubrows = count()
+        rc = _rc(tk.StringVar(), _dirty_factory())
+        rc.variable.set("")
+        self.choices["detection"] = rc
+        for subsubrow, widget in \
+            zip(subsubrows,
+                [ttk.Radiobutton(subsubframe,
+                                 text=text,
+                                 value=value,
+                                 variable=rc.variable,
+                                 command=_set_factory(rc.dirty)) \
+                 for text, value in \
+                 [("data [checksums] only",
+                   "--checksum"),
+                  ("sizes only",
+                   "--size-only"),
+                  ("size and modification time, falling back to checksums",
+                   "")]]):
+            widget.grid(row=subsubrow, column=0, sticky=tk.W)
+        subsubframe.grid(row=next(subrows), column=0, columnspan=2,
+                         sticky=(tk.W, tk.E))
         subframe.grid(row=next(subrows), column=0, columnspan=2,
                       sticky=(tk.W, tk.E))
 
