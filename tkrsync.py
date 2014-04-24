@@ -410,6 +410,13 @@ class RsyncTkGUI(ttk.Frame):
             # FIXME: Pass parent widget if possible?
             dialog(message)
 
+    def rsynccommand(self):
+        return ["rsync"] \
+               + [flag.flag for flag in self.flags.values() \
+                  if flag.variable.get()] \
+               + [choice.variable.get() for choice in self.choices.values() \
+                  if choice.variable.get()]
+
     def sync(self):
         raise NotImplementedError()
 
