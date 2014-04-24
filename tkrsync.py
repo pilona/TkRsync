@@ -255,15 +255,16 @@ class RsyncTkGUI(ttk.Frame):
         # --delete-* should only be available if --delete is set
         choice = tk.StringVar()
         variable = tk.BooleanVar()
-        buttons = []
-        def callback():
-            state = "normal" if variable.get() else "disabled"
-            for button in buttons:
-                button.state(state)
+        widgets = []
+        def callback(widgets=widgets, variable=variable):
+            statespec = (tk.NORMAL if variable.get() else tk.DISABLED,)
+            for widget in widgets:
+                widget["state"] = statespec
         checkbutton = ttk.Checkbutton(subframe, variable=variable,
                                       onvalue=True, offvalue=False,
                                       text="Delete extraneous files from"
-                                           " destination directories")
+                                           " destination directories",
+                                      command=callback)
         checkbutton.grid(row=next(subsubrows), column=0, columnspan=2,
                          sticky=(tk.W, tk.E))
         for subsubrow, (description, flag) in \
@@ -273,11 +274,19 @@ class RsyncTkGUI(ttk.Frame):
                  #("During transfer", "--delete-during"),
                  #("Find deletions during, delete after", "--delete-delay")
                  ("After transfer",  "--delete-after")]):
-            ttk.Label(subframe, text=description).grid(row=subsubrow, column=0,
-                                                       sticky=tk.W)
-            button = ttk.Radiobutton(subframe, textvariable=variable, value=flag)
+            label = ttk.Label(subframe,
+                              text=description,
+                              # FIXME: unavoidable duplication of work?
+                              state=(tk.DISABLED,))
+            label.grid(row=subsubrow, column=0, sticky=tk.W)
+            widgets.append(label)
+            button = ttk.Radiobutton(subframe, variable=variable, value=flag,
+                                     # FIXME: unavoidable duplication of work?
+                                     state=(tk.DISABLED,))
             button.grid(row=subsubrow, column=1, sticky=(tk.W, tk.E))
-            buttons.append(button)
+            widgets.append(button)
+        subframe.grid(row=next(subrows), column=0, columnspan=2,
+                      sticky=(tk.W, tk.E))
 
         # --- --- simple options --- --- #
         simple = ttk.Frame(nb)
